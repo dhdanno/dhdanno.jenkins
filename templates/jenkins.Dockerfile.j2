@@ -2,6 +2,11 @@ FROM jenkins/jenkins
 
 USER root
 
-RUN apt-get update && apt-get install -y python-pip ansible npm docker vim
+RUN apt-get update && apt-get install -y python-pip ansible docker vim curl
+
+# Node + NPM
+RUN curl -sL https://deb.nodesource.com/setup_6.x -o nodesource_setup.sh && bash nodesource_setup.sh
+
+RUN apt-get update && apt-get install -y build-essential nodejs
 
 USER jenkins
