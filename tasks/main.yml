@@ -2,13 +2,20 @@
 - name: Copy the dockerfile
   template: src=jenkins.Dockerfile.j2 dest=/data/jenkins.Dockerfile
 
-- name: start jenkins docker container
-  docker_container:
-    name: jenkins
-    build: /data/jenkins.Dockerfile
-    state: started
-    restart: yes
-    volumes:
-      - "/data/jenkins_home:/var/jenkins_home"
-    ports:
-      - "8080:8080"
+- name: Build and start a new jenkins docker container
+  docker_service:
+    project_name: jenkins
+    build: yes
+    definition:
+      version: '2'
+      services:
+        jenkins:
+          image: jenkins/jenkins
+          build:
+            context: /data/
+            dockerfile: jenkins.Dockerfile
+          volumes:
+            - "/data/jenkins_home:/var/jenkins_home"
+          ports:
+            - "8080:8080"
+    state: present
