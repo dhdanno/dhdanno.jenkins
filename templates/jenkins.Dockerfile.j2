@@ -2,7 +2,10 @@ FROM jenkins/jenkins
 
 USER root
 
-RUN apt-get update && apt-get install -y python-pip ansible docker vim curl unzip
+RUN apt-get update && apt-get install -y python-pip docker vim curl unzip
+
+# Ansible
+RUN pip install ansible
 
 # Node + NPM
 RUN curl -sL https://deb.nodesource.com/setup_6.x -o nodesource_setup.sh && bash nodesource_setup.sh
