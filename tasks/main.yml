@@ -18,4 +18,5 @@
             - "/data/jenkins_home:/var/jenkins_home"
           ports:
             - "8080:8080"
+          restart: always
     state: present
