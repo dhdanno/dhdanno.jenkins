@@ -11,10 +11,10 @@
   template: src=nginx.Dockerfile.j2 dest=/data/nginx/Dockerfile
 
 - name: Copy the nginx config
-  template: src=config/nginx.conf dest=/data/nginx/conf/nginx.conf
+  template: src=config/nginx.conf dest=/data/nginx/config/nginx.conf
   
 - name: Copy the nginx config
-  template: src=config/nginx.custom dest=/data/nginx/conf/nginx.custom
+  template: src=config/nginx.custom dest=/data/nginx/config/nginx.custom
 
 - name: Build and start a new jenkins docker container
   docker_service:
@@ -33,4 +33,20 @@
           ports:
             - "8080:8080"
           restart: always
+        nginx:
+          build:
+            context: /data/nginx
+            dockerfile: Dockerfile
+          ports:
+            - "80:80"
+            - "443:443"
+          environment:
+            - LAUNCH_ENV=custom
+            - UPSTREAM_HOST=jenkins
+            - UPSTREAM_PORT=8080
+          volumes:
+            - "/data/ssl:/etc/ssl"
+          depends_on:
+            - jenkins
+          command: /bin/bash -c "envsubst '$$UPSTREAM_HOST $$UPSTREAM_PORT' < /tmp/nginx.custom > /etc/nginx/conf.d/default.conf && nginx -g 'daemon off;'"
     state: present
