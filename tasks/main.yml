@@ -1,6 +1,20 @@
 ---
-- name: Copy the dockerfile
+- name: Copy the jenkins dockerfile
   template: src=jenkins.Dockerfile.j2 dest=/data/jenkins.Dockerfile
+
+- name: Create the nginx dir
+  file:
+    path: /data/nginx/config
+    state: directory
+    
+- name: Copy the nginx dockerfile
+  template: src=nginx.Dockerfile.j2 dest=/data/nginx/Dockerfile
+
+- name: Copy the nginx config
+  template: src=config/nginx.conf dest=/data/nginx/conf/nginx.conf
+  
+- name: Copy the nginx config
+  template: src=config/nginx.custom dest=/data/nginx/conf/nginx.custom
 
 - name: Build and start a new jenkins docker container
   docker_service:
