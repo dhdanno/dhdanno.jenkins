@@ -1,0 +1,7 @@
+FROM nginx
+
+RUN apt-get update && apt-get install gettext -y
+
+COPY config/* /tmp/
+
+COPY config/nginx.conf /etc/nginx/nginx.conf
