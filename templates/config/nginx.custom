@@ -33,19 +33,51 @@ server {
     ssl_session_timeout 1d;
     ssl_session_cache shared:SSL:10m;
     ssl_session_tickets off;
-    ssl_stapling on;
-    ssl_stapling_verify on;
     resolver 8.8.8.8 8.8.4.4 valid=300s;
     resolver_timeout 5s;
     add_header Strict-Transport-Security max-age=15768000;
     add_header X-Frame-Options DENY;
     add_header X-Content-Type-Options nosniff;
 
-    location / {
-      proxy_set_header Host       $host;
-      proxy_set_header X-Real-IP  $remote_addr;
-      proxy_buffering             off;
+    ignore_invalid_headers off; #pass through headers from Jenkins which are considered invalid by Nginx server.
 
-      proxy_pass                  http://$UPSTREAM_HOST:$UPSTREAM_PORT;
+    location ~ "^/static/[0-9a-fA-F]{8}\/(.*)$" {
+      #rewrite all static files into requests to the root
+      #E.g /static/12345678/css/something.css will become /css/something.css
+      rewrite "^/static/[0-9a-fA-F]{8}\/(.*)" /$1 last;
+    }
+
+    location @jenkins {
+
+        sendfile off;
+        proxy_pass                  http://$UPSTREAM_HOST:$UPSTREAM_PORT;
+        proxy_redirect              default;
+        proxy_http_version          1.1;
+
+        proxy_set_header            host             $host;
+        proxy_set_header            X-Real-IP        $remote_addr;
+        proxy_set_header            X-Forwarded-For  $proxy_add_x_forwarded_for;
+        proxy_max_temp_file_size    0;
+
+        proxy_set_header            X-Forwarded-Proto https;
+        proxy_set_header            X-Forwarded-Port 443;
+
+        #this is the maximum upload size
+        client_max_body_size        10m;
+        client_body_buffer_size     128k;
+
+        proxy_connect_timeout       90;
+        proxy_send_timeout          90;
+        proxy_read_timeout          90;
+        proxy_request_buffering     off; # Required for HTTP CLI commands in Jenkins > 2.54
+
+    }
+
+    location / {
+      proxy_set_header Host         $host;
+      proxy_set_header X-Real-IP    $remote_addr;
+      proxy_buffering               off;
+
+      try_files                     $uri @jenkins;
     }
 }
