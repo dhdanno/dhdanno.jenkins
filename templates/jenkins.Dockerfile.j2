@@ -13,6 +13,6 @@ RUN curl -sL https://deb.nodesource.com/setup_6.x -o nodesource_setup.sh && bash
 # Packer
 RUN cd /tmp && curl -O https://releases.hashicorp.com/packer/1.1.0/packer_1.1.0_linux_amd64.zip && unzip packer_1.1.0_linux_amd64.zip && chmod +x packer && mv packer /usr/local/bin/
 
-RUN apt-get update && apt-get install -y build-essential nodejs
+RUN apt-get update && apt-get install -y build-essential nodejs python-boto awscli
 
 USER jenkins
